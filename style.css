@@ -86,7 +86,9 @@ button:disabled {
     margin-bottom: 20px;
 }
 #save-conversation-btn { background: var(--accent-green); }
-#load-conversation-btn { background: var(--accent-blue); }
+.load-container { flex: 1; }
+#load-conversation-btn { background: var(--accent-blue); width: 100%; }
+#load-conversation-select { margin-top: 10px; }
 
 
 .participants-section, .message-input-section, .timeline-section {
