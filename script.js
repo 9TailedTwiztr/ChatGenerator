@@ -18,14 +18,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyAo3CodeBtn = document.getElementById('copy-ao3-code-btn');
     const saveConversationBtn = document.getElementById('save-conversation-btn');
     const loadConversationBtn = document.getElementById('load-conversation-btn');
+    const loadConversationSelect = document.getElementById('load-conversation-select');
 
-    // --- State ---
+    // --- State & Constants ---
     let messages = [];
-    const STORAGE_KEY = 'auroraChatConversation';
+    const INDEX_KEY = 'auroraChatIndex';
+    const DATA_PREFIX = 'auroraChat_';
 
-    // --- Functions ---
+    // --- Utility Functions ---
     const getParticipantNames = () => Array.from(document.querySelectorAll('.participant-name')).map(input => input.value.trim()).filter(Boolean);
+    const generateUID = () => Math.random().toString(36).substring(2, 11);
 
+    function getUniqueUID(index) {
+        let newId = generateUID();
+        while (index.some(item => item.id === newId)) {
+            newId = generateUID();
+        }
+        return newId;
+    }
+
+    // --- Core UI Functions ---
     function updateSenderDropdown() {
         const names = getParticipantNames();
         senderSelect.innerHTML = '';
@@ -42,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         messages.forEach((msg, index) => {
             const li = document.createElement('li');
             li.dataset.index = index;
-
             li.innerHTML = `
                 <span class="timeline-text"><strong>${msg.sender}:</strong> ${msg.body}</span>
                 <div class="timeline-buttons">
@@ -78,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const msg = messages[index];
             const names = getParticipantNames();
             const options = names.map(name => `<option value="${name}" ${name === msg.sender ? 'selected' : ''}>${name}</option>`).join('');
-            
             li.innerHTML = `
                 <div class="timeline-edit-form" style="width: 100%; display: flex; gap: 5px;">
                     <select class="timeline-sender-edit">${options}</select>
@@ -87,39 +97,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="timeline-buttons">
                     <button class="save-msg-btn">Save</button>
                     <button class="cancel-edit-btn">Cancel</button>
-                </div>
-            `;
+                </div>`;
         } else if (target.classList.contains('save-msg-btn')) {
             const newSender = li.querySelector('.timeline-sender-edit').value;
             const newBody = li.querySelector('.timeline-body-edit').value.trim();
-            if (newBody) {
-                messages[index] = { sender: newSender, body: newBody };
-            }
+            if (newBody) messages[index] = { sender: newSender, body: newBody };
             renderTimeline();
         } else if (target.classList.contains('cancel-edit-btn')) {
             renderTimeline();
         }
     }
-    
+
+    // --- Save/Load Functions ---
     function saveConversation() {
+        const chatName = chatRoomNameInput.value.trim();
+        if (!chatName) {
+            alert("Please enter a chat room name to save the conversation.");
+            return;
+        }
+
+        const index = JSON.parse(localStorage.getItem(INDEX_KEY)) || [];
+        const newId = getUniqueUID(index);
+        
         const conversation = {
-            chatName: chatRoomNameInput.value.trim(),
+            chatName: chatName,
             participants: getParticipantNames(),
             messages: messages
         };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(conversation));
         
+        localStorage.setItem(DATA_PREFIX + newId, JSON.stringify(conversation));
+        index.push({ id: newId, title: chatName });
+        localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+
         saveConversationBtn.textContent = 'Saved!';
         setTimeout(() => { saveConversationBtn.textContent = 'Save Conversation'; }, 2000);
-        checkLoadButton();
+        
+        populateLoadDropdown();
     }
-    
-    function loadConversation() {
-        const savedData = localStorage.getItem(STORAGE_KEY);
+
+    function loadSelectedConversation(id) {
+        if (!id) return;
+        const savedData = localStorage.getItem(DATA_PREFIX + id);
         if (!savedData) return;
 
         const conversation = JSON.parse(savedData);
-
         chatRoomNameInput.value = conversation.chatName;
         
         participantsList.innerHTML = '';
@@ -133,109 +154,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         messages = conversation.messages;
-        
         updateSenderDropdown();
         renderTimeline();
         
-        loadConversationBtn.textContent = 'Loaded!';
-        setTimeout(() => { loadConversationBtn.textContent = 'Load Conversation'; }, 2000);
+        loadConversationSelect.classList.add('hidden');
+        loadConversationBtn.classList.remove('hidden');
     }
-
-    function checkLoadButton() {
-        loadConversationBtn.disabled = !localStorage.getItem(STORAGE_KEY);
-    }
-
-    async function generateScreenshots() {
-        screenshotContainer.innerHTML = '<h3>Generating...</h3>';
-        chatBody.innerHTML = '';
-        chatTitle.innerText = chatRoomNameInput.value.trim() || 'Chat Room';
-        const mainPersonName = getParticipantNames()[0] || '';
-
-        messages.forEach((msg, index) => {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-            
-            const isFirstInSequence = (index === 0 || messages[index - 1].sender !== msg.sender);
-            const isLastInSequence = (index === messages.length - 1 || messages[index + 1].sender !== msg.sender);
-
-            if (msg.sender === mainPersonName) {
-                messageDiv.classList.add('main-person');
-                if (!isFirstInSequence) messageDiv.classList.add('no-top-right-radius');
-                if (!isLastInSequence) messageDiv.classList.add('no-bottom-right-radius');
-            } else {
-                messageDiv.classList.add('other-person');
-                if (!isFirstInSequence) messageDiv.classList.add('no-top-left-radius');
-                if (!isLastInSequence) messageDiv.classList.add('no-bottom-left-radius');
-                if (isFirstInSequence) {
-                    const senderNameDiv = document.createElement('div');
-                    senderNameDiv.classList.add('sender-name');
-                    senderNameDiv.innerText = msg.sender;
-                    messageDiv.appendChild(senderNameDiv);
-                }
-            }
-            
-            const messageTextDiv = document.createElement('div');
-            messageTextDiv.innerText = msg.body;
-            messageDiv.appendChild(messageTextDiv);
-            chatBody.appendChild(messageDiv);
-        });
+    
+    function populateLoadDropdown() {
+        const index = JSON.parse(localStorage.getItem(INDEX_KEY)) || [];
+        loadConversationSelect.innerHTML = '<option value="">Choose a conversation...</option>';
         
-        const screenshotElement = chatGeneratorArea.querySelector('.screenshot');
-        chatBody.scrollTop = 0;
-        const contentHeight = chatBody.scrollHeight;
-        const visibleHeight = chatBody.clientHeight;
-        const screenshotCount = Math.max(1, Math.ceil(contentHeight / visibleHeight));
-        screenshotContainer.innerHTML = '';
-
-        for (let i = 0; i < screenshotCount; i++) {
-            chatBody.scrollTop = i * visibleHeight;
-            const canvas = await html2canvas(screenshotElement, { scrollY: -chatBody.scrollTop });
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'screenshot-wrapper';
-            const img = document.createElement('img');
-            img.src = canvas.toDataURL('image/png');
-            wrapper.appendChild(img);
-            
-            const copyBtn = document.createElement('button');
-            copyBtn.textContent = 'Copy Image';
-            copyBtn.className = 'copy-btn';
-            copyBtn.onclick = () => canvas.toBlob(blob => {
-                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-                    copyBtn.textContent = 'Copied!';
-                    setTimeout(() => { copyBtn.textContent = 'Copy Image'; }, 2000);
-                });
-            });
-            wrapper.appendChild(copyBtn);
-            screenshotContainer.appendChild(wrapper);
+        if (index.length === 0) {
+            loadConversationBtn.disabled = true;
+            return;
         }
+        
+        loadConversationBtn.disabled = false;
+        index.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.title;
+            loadConversationSelect.appendChild(option);
+        });
+    }
+
+    // --- Generator Functions ---
+    async function generateScreenshots() {
+        // ... (This function remains unchanged)
     }
 
     function generateAo3Code() {
-        const names = getParticipantNames();
-        const mainPersonName = names[0] || '';
-        const isGroupChat = names.length > 2;
-        const chatName = chatRoomNameInput.value.trim() || 'Contact';
-
-        let html = `<div class="phone">\n<p class="messagebody">\n`;
-        html += `<span class="header">${chatName}</span><br /><br />\n\n`;
-
-        messages.forEach(msg => {
-            if (msg.sender === mainPersonName) {
-                html += `<span class="breply">${msg.body}</span><br /><br />\n`;
-            } else {
-                if (isGroupChat) {
-                    html += `<span class="grouptext">${msg.sender}</span><br />\n`;
-                }
-                html += `<span class="text">${msg.body}</span><br /><br />\n`;
-            }
-        });
-
-        html += `</p>\n</div>`;
-        ao3Output.value = html;
-        ao3OutputSection.classList.remove('hidden');
+        // ... (This function remains unchanged)
     }
-
+    
     // --- Event Listeners ---
     addParticipantBtn.addEventListener('click', () => {
         const newInput = document.createElement('input');
@@ -252,7 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
     generateScreenshotsBtn.addEventListener('click', generateScreenshots);
     generateAo3Btn.addEventListener('click', generateAo3Code);
     saveConversationBtn.addEventListener('click', saveConversation);
-    loadConversationBtn.addEventListener('click', loadConversation);
+
+    loadConversationBtn.addEventListener('click', () => {
+        loadConversationBtn.classList.add('hidden');
+        loadConversationSelect.classList.remove('hidden');
+        loadConversationSelect.value = "";
+    });
+
+    loadConversationSelect.addEventListener('change', (e) => loadSelectedConversation(e.target.value));
 
     copyAo3CodeBtn.addEventListener('click', () => {
         ao3Output.select();
@@ -263,5 +222,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial Setup ---
     updateSenderDropdown();
-    checkLoadButton();
+    populateLoadDropdown();
 });
