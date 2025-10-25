@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Chat Screenshot Generator</title>
+    <title>Aurora Chat Simulator & AO3 Exporter</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="input-section">
-            <h1>Create Your Chat</h1>
+            <h1>Aurora Chat Simulator</h1>
+
+            <div class="storage-buttons">
+                <button id="save-conversation-btn">Save Conversation</button>
+                <button id="load-conversation-btn">Load Conversation</button>
+            </div>
 
             <input type="text" id="chat-room-name" placeholder="Enter chat room name">
 
@@ -28,7 +33,7 @@
                     <textarea id="message-body" placeholder="Type your message..."></textarea>
                     <select id="sender-select"></select>
                 </div>
-                <button id="add-message">Add Message to Timeline</button>
+                <button id="add-message-btn">Add Message to Timeline</button>
             </div>
 
             <div class="timeline-section">
@@ -36,14 +41,23 @@
                 <ul id="message-timeline"></ul>
             </div>
 
-            <button id="generate-btn">Generate Screenshots</button>
+            <div class="generator-buttons">
+                <button id="generate-screenshots-btn">Generate Screenshots</button>
+                <button id="generate-ao3-btn">Generate AO3 Code</button>
+            </div>
+
+            <div id="ao3-output-section" class="hidden">
+                <h2>AO3 Work Text HTML</h2>
+                <textarea id="ao3-output" readonly></textarea>
+                <button id="copy-ao3-code-btn">Copy Code</button>
+            </div>
         </div>
 
         <div class="output-section">
             <div id="screenshot-container">
                 <!-- Screenshots will be appended here -->
             </div>
-            <div id="chat-generator-area" style="position: absolute; left: -9999px;">
+            <div id="chat-generator-area" style="position: absolute; left: -9999px; top: 0;">
                 <div class="screenshot">
                     <div class="chat-header">
                         <div class="chat-info">
@@ -58,13 +72,14 @@
                     <div class="chat-body">
                     </div>
                     <div class="chat-footer">
+                        <div class="footer-icons">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-10 10a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2zm-1.5 13.5l-3-3l1.41-1.41L10.5 12.67l4.59-4.59L16.5 9.5l-6 6z"/></svg>
+                        </div>
                         <div class="text-input">
-                            <span>Aa</span>
+                            <span>Message...</span>
                         </div>
                         <div class="footer-icons">
-                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-10 10a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 0 1-8-8a8 8 0 0 1 8-8a8 8 0 0 1 8 8a8 8 0 0 1-8 8zm-2-9a2 2 0 1 1 4 0a2 2 0 0 1-4 0zm-4 3a2 2 0 1 1 4 0a2 2 0 0 1-4 0zm8 0a2 2 0 1 1 4 0a2 2 0 0 1-4 0z"/></svg>
                             <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 14a2 2 0 0 0 2-2V6a2 2 0 0 0-4 0v6a2 2 0 0 0 2 2zm-2-6a2 2 0 0 1 4 0v6a2 2 0 0 1-4 0V8z"/><path fill="currentColor" d="M19 11h-1.1c0 2.71-2.16 4.9-4.85 4.9S7.2 13.71 7.2 11H6a6 6 0 0 0 5.28 5.95L11 18v2h2v-2l-.28-.05A6 6 0 0 0 19 11z"/></svg>
-                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m16.5 6l-9 9l1.41 1.41L18.32 6H13v-2h8v8h-2V7.41l-1.41-1.41z"/></svg>
                         </div>
                     </div>
                 </div>
