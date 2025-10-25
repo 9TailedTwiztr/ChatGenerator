@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Chat Screenshot Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <h1>Create Your Chat</h1>
+
+            <input type="text" id="chat-room-name" placeholder="Enter chat room name">
+
+            <div class="participants-section">
+                <h2>Participants</h2>
+                <div id="participants-list">
+                    <input type="text" class="participant-name" placeholder="Main Person's Name">
+                </div>
+                <button id="add-participant">Add Another Participant</button>
+            </div>
+
+            <div class="message-input-section">
+                <h2>Messages</h2>
+                <div class="message-input">
+                    <textarea id="message-body" placeholder="Type your message..."></textarea>
+                    <select id="sender-select"></select>
+                </div>
+                <button id="add-message">Add Message to Timeline</button>
+            </div>
+
+            <div class="timeline-section">
+                <h2>Chat Timeline</h2>
+                <ul id="message-timeline"></ul>
+            </div>
+
+            <button id="generate-btn">Generate Screenshots</button>
+        </div>
+
+        <div class="output-section">
+            <div id="screenshot-container">
+                <!-- Screenshots will be appended here -->
+            </div>
+            <div id="chat-generator-area" style="position: absolute; left: -9999px;">
+                <div class="screenshot">
+                    <div class="chat-header">
+                        <div class="chat-info">
+                            <h3 id="chat-title"></h3>
+                        </div>
+                        <div class="header-icons">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.62 10.79a15.25 15.25 0 0 0 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57c.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+                        </div>
+                    </div>
+                    <div class="chat-body">
+                    </div>
+                    <div class="chat-footer">
+                        <div class="text-input">
+                            <span>Aa</span>
+                        </div>
+                        <div class="footer-icons">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-10 10a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 0 1-8-8a8 8 0 0 1 8-8a8 8 0 0 1 8 8a8 8 0 0 1-8 8zm-2-9a2 2 0 1 1 4 0a2 2 0 0 1-4 0zm-4 3a2 2 0 1 1 4 0a2 2 0 0 1-4 0zm8 0a2 2 0 1 1 4 0a2 2 0 0 1-4 0z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 14a2 2 0 0 0 2-2V6a2 2 0 0 0-4 0v6a2 2 0 0 0 2 2zm-2-6a2 2 0 0 1 4 0v6a2 2 0 0 1-4 0V8z"/><path fill="currentColor" d="M19 11h-1.1c0 2.71-2.16 4.9-4.85 4.9S7.2 13.71 7.2 11H6a6 6 0 0 0 5.28 5.95L11 18v2h2v-2l-.28-.05A6 6 0 0 0 19 11z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m16.5 6l-9 9l1.41 1.41L18.32 6H13v-2h8v8h-2V7.41l-1.41-1.41z"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
